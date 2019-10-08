@@ -7,28 +7,34 @@ import (
 	"os"
 )
 
+const (
+	todoSubject = "todoSubject"
+)
+
 func main() {
-	if os.Getenv("INITIAL_URI") == "" {
+	initialUri := os.Getenv("INITIAL_URI")
+
+	if initialUri == "" {
 		log.Fatal("Missing INITIAL_URI system property")
 	}
 
-	log.Println("Initializing feeder on url: ", os.Getenv("INITIAL_URI"))
+	log.Printf("Initializing feeder on url: %s", initialUri)
 
 	// connect to NATS server
 	nc, err := nats.Connect(os.Getenv("NATS_URI"))
 	if err != nil {
-		log.Fatal("Error while connecting to nats server: ", err)
+		log.Fatalf("Error while connecting to nats server: %s", err)
 	}
 	defer nc.Close()
 
-	log.Println("Feeding url " + os.Getenv("INITIAL_URI") + " to web-crawler")
+	log.Printf("Feeding url %s to web-crawler", initialUri)
 
-	bytes, err := json.Marshal(os.Getenv("INITIAL_URI"))
+	bytes, err := json.Marshal(initialUri)
 	if err != nil {
-		log.Fatal("Error while serializing message into json: ", err)
+		log.Fatalf("Error while serializing message into json: %s", err)
 	}
 
-	if err := nc.Publish("todoSubject", bytes); err != nil {
-		log.Fatal("Error while publishing message: ", err)
+	if err := nc.Publish(todoSubject, bytes); err != nil {
+		log.Fatalf("Error while publishing message: %s", err)
 	}
 }
